@@ -16,6 +16,9 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPointInterface;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity{
 
     private static final int MAX_DATAPOINTS = 1000;
