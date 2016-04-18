@@ -1,5 +1,6 @@
 package blomberg.tistou.accelerometer;
 
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,12 +25,12 @@ public class MainActivity extends AppCompatActivity{
     private static final int MAX_DATAPOINTS = 1000;
     private static final double SHAKE_THRESH = 2f;
 
-    TextView mainTextViewX;
-    TextView mainTextViewY;
-    TextView mainTextViewZ;
-    GraphView mainGraphViewX;
-    GraphView mainGraphViewY;
-    GraphView mainGraphViewZ;
+    @Bind(R.id.MAIN_TEXTVIEW_X)TextView mainTextViewX;
+    @Bind(R.id.MAIN_TEXTVIEW_Y)TextView mainTextViewY;
+    @Bind(R.id.MAIN_TEXTVIEW_Z)TextView mainTextViewZ;
+    @Bind(R.id.MAIN_GRAPHVIEW_X)GraphView mainGraphViewX;
+    @Bind(R.id.MAIN_GRAPHVIEW_Y)GraphView mainGraphViewY;
+    @Bind(R.id.MAIN_GRAPHVIEW_Z)GraphView mainGraphViewZ;
 
     LineGraphSeries<DataPointInterface> accDataX;
     LineGraphSeries<DataPointInterface> accDataY;
@@ -48,21 +49,18 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        setupGraphData();
+    }
 
-        mainTextViewX = (TextView)findViewById(R.id.MAIN_TEXTVIEW_X);
-        mainTextViewY = (TextView)findViewById(R.id.MAIN_TEXTVIEW_Y);
-        mainTextViewZ = (TextView)findViewById(R.id.MAIN_TEXTVIEW_Z);
-
-        mainGraphViewX = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_X);
-        mainGraphViewY = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_Y);
-        mainGraphViewZ = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_Z);
+    private void setupGraphData() {
         accDataX = new LineGraphSeries<>(new DataPointInterface[]{});
         accDataY = new LineGraphSeries<>(new DataPointInterface[]{});
         accDataZ = new LineGraphSeries<>(new DataPointInterface[]{});
+        //accDataX.setColor(Color.CYAN);
         mainGraphViewX.addSeries(accDataX);
         mainGraphViewY.addSeries(accDataY);
         mainGraphViewZ.addSeries(accDataZ);
-
     }
 
     private void addDataPoints(double x, double y, double z){
