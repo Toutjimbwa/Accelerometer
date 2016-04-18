@@ -9,9 +9,29 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPointInterface;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 public class MainActivity extends AppCompatActivity{
+
+    private static final int MAX_DATAPOINTS = 1000;
+    private static final double SHAKE_THRESH = 2f;
+
+    TextView mainTextViewX;
+    TextView mainTextViewY;
+    TextView mainTextViewZ;
+    GraphView mainGraphViewX;
+    GraphView mainGraphViewY;
+    GraphView mainGraphViewZ;
+
+    LineGraphSeries<DataPointInterface> accDataX;
+    LineGraphSeries<DataPointInterface> accDataY;
+    LineGraphSeries<DataPointInterface> accDataZ;
+    int graphStep = 0;
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -26,6 +46,27 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mainTextViewX = (TextView)findViewById(R.id.MAIN_TEXTVIEW_X);
+        mainTextViewY = (TextView)findViewById(R.id.MAIN_TEXTVIEW_Y);
+        mainTextViewZ = (TextView)findViewById(R.id.MAIN_TEXTVIEW_Z);
+
+        mainGraphViewX = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_X);
+        mainGraphViewY = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_Y);
+        mainGraphViewZ = (GraphView)findViewById(R.id.MAIN_GRAPHVIEW_Z);
+        accDataX = new LineGraphSeries<>(new DataPointInterface[]{});
+        accDataY = new LineGraphSeries<>(new DataPointInterface[]{});
+        accDataZ = new LineGraphSeries<>(new DataPointInterface[]{});
+        mainGraphViewX.addSeries(accDataX);
+        mainGraphViewY.addSeries(accDataY);
+        mainGraphViewZ.addSeries(accDataZ);
+
+    }
+
+    private void addDataPoints(double x, double y, double z){
+        graphStep++;
+        accDataX.appendData(new com.jjoe64.graphview.series.DataPoint(graphStep, x), false, MAX_DATAPOINTS);
+        accDataY.appendData(new com.jjoe64.graphview.series.DataPoint(graphStep, y), false, MAX_DATAPOINTS);
+        accDataZ.appendData(new com.jjoe64.graphview.series.DataPoint(graphStep, z), false, MAX_DATAPOINTS);
     }
 
     private void setupAccelerometer() {
@@ -50,10 +91,6 @@ public class MainActivity extends AppCompatActivity{
                 linear_acceleration[0] = event.values[0] - gravity[0];
                 linear_acceleration[1] = event.values[1] - gravity[1];
                 linear_acceleration[2] = event.values[2] - gravity[2];
-
-                Log.i("SENSORS GRAVITY_ACC", "x: "+linear_acceleration[0]);
-                Log.i("SENSORS GRAVITY_ACC", "y: "+linear_acceleration[1]);
-                Log.i("SENSORS GRAVITY_ACC", "z: "+linear_acceleration[2]);
             }
 
             @Override
@@ -89,9 +126,21 @@ public class MainActivity extends AppCompatActivity{
                 linear_acceleration[1] = event.values[1] - gravity[1];
                 linear_acceleration[2] = event.values[2] - gravity[2];
 
-                Log.i("SENSORS LINEAR_ACC", "x: "+linear_acceleration[0]);
-                Log.i("SENSORS LINEAR_ACC", "y: "+linear_acceleration[1]);
-                Log.i("SENSROS LINEAR_ACC", "z: "+linear_acceleration[2]);
+                String x = String.format("X: %.1f", linear_acceleration[0]);
+                String y = String.format("Y: %.1f", linear_acceleration[1]);
+                String z = String.format("Z: %.1f", linear_acceleration[2]);
+                mainTextViewX.setText(x);
+                mainTextViewY.setText(y);
+                mainTextViewZ.setText(z);
+                setTextColor(mainTextViewX, linear_acceleration[0]);
+                setTextColor(mainTextViewY, linear_acceleration[1]);
+                setTextColor(mainTextViewZ, linear_acceleration[2]);
+
+                setGraphColor(mainGraphViewX, linear_acceleration[0]);
+                setGraphColor(mainGraphViewY, linear_acceleration[1]);
+                setGraphColor(mainGraphViewZ, linear_acceleration[2]);
+
+                addDataPoints(linear_acceleration[0], linear_acceleration[1], linear_acceleration[2]);
             }
 
             @Override
@@ -106,6 +155,24 @@ public class MainActivity extends AppCompatActivity{
             toast("accelerometer initialised");
         }else{
             toast("accelerometer NULL");
+        }
+    }
+
+    private void setTextColor(TextView textView, double acc) {
+        if(didShake(acc)){
+            textView.setTextColor(getResources().getColor(R.color.idle));
+            textView.setTextSize(getResources().getDimension(R.dimen.threshhold));
+        }else{
+            textView.setTextColor(getResources().getColor(R.color.threshhold));
+            textView.setTextSize(getResources().getDimension(R.dimen.idle));
+        }
+    }
+
+    private void setGraphColor(GraphView graphView, double acc) {
+        if(didShake(acc)) {
+            graphView.setBackgroundColor(getResources().getColor(R.color.threshhold));
+        }else {
+            graphView.setBackgroundColor(getResources().getColor(R.color.idle));
         }
     }
 
@@ -139,5 +206,13 @@ public class MainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         setupAccelerometer();
+    }
+
+    public boolean didShake(double d){
+        if( (d > SHAKE_THRESH) || (d < -SHAKE_THRESH)){
+            return true;
+        }else {
+            return false;
+        }
     }
 }
