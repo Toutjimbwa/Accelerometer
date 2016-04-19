@@ -1,9 +1,11 @@
 package blomberg.tistou.accelerometer;
 
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity{
     private static final double ARROW_SMOOTHNESS = 5;
     private static final int MAX_DATAPOINTS = 1000;
     private static final double SHAKE_THRESH = 2f;
+    private static final int DOT_SENSITIVITY = 5;
 
     @Bind(R.id.MAIN_TEXTVIEW_X)TextView mainTextViewX;
     @Bind(R.id.MAIN_TEXTVIEW_Y)TextView mainTextViewY;
@@ -49,8 +52,9 @@ public class MainActivity extends AppCompatActivity{
     @Bind(R.id.MAIN_BTN_SWITCH)Button mainButtonSwitch;
     @Bind(R.id.MAIN_LINLAY_GRAPHS)LinearLayout mainLinlayGraphs;
     @Bind(R.id.MAIN_RELLAY_ARROWS)RelativeLayout mainRellayArrows;
+    @Bind(R.id.MAIN_IMAGEVIEW_DOT)ImageView mainImageView_dot;
 
-    private boolean arrowsVisible;
+    private int arrowsVisible = 0;
 
     LineGraphSeries<DataPointInterface> accDataX;
     LineGraphSeries<DataPointInterface> accDataY;
@@ -72,11 +76,11 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setupButton();
+        setupButtons();
         setupGraphData();
     }
 
-    private void setupButton() {
+    private void setupButtons() {
         mainButtonSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,16 +90,24 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void switchGraphArrows() {
-        if(arrowsVisible){
+        if(arrowsVisible == 0){
             mainButtonSwitch.setText("arrows");
             mainRellayArrows.setVisibility(View.GONE);
             mainLinlayGraphs.setVisibility(View.VISIBLE);
-            arrowsVisible=false;
-        }else {
+            mainImageView_dot.setVisibility(View.GONE);
+            arrowsVisible++;
+        }else if (arrowsVisible == 1){
             mainButtonSwitch.setText("graphs");
             mainRellayArrows.setVisibility(View.VISIBLE);
             mainLinlayGraphs.setVisibility(View.GONE);
-            arrowsVisible=true;
+            mainImageView_dot.setVisibility(View.GONE);
+            arrowsVisible++;
+        }else if(arrowsVisible == 2){
+            mainButtonSwitch.setText("dot");
+            mainRellayArrows.setVisibility(View.GONE);
+            mainLinlayGraphs.setVisibility(View.GONE);
+            mainImageView_dot.setVisibility(View.VISIBLE);
+            arrowsVisible = 0;
         }
     }
 
@@ -173,9 +185,9 @@ public class MainActivity extends AppCompatActivity{
 
                 addDataPoints(linear_acceleration[0], linear_acceleration[1], linear_acceleration[2]);
 
-                if(arrowsVisible){
+                if(arrowsVisible == 1){
                     setImageSizes(accDataX, accDataY, accDataZ);
-                }else{
+                }else if(arrowsVisible == 2){
                     String x = String.format("X: %.1f", linear_acceleration[0]);
                     String y = String.format("Y: %.1f", linear_acceleration[1]);
                     String z = String.format("Z: %.1f", linear_acceleration[2]);
@@ -189,6 +201,13 @@ public class MainActivity extends AppCompatActivity{
                     setGraphColor(mainGraphViewX, linear_acceleration[0]);
                     setGraphColor(mainGraphViewY, linear_acceleration[1]);
                     setGraphColor(mainGraphViewZ, linear_acceleration[2]);
+                }else if(arrowsVisible == 0){
+                    float current_x = mainImageView_dot.getX();
+                    float new_x = (float)(current_x - linear_acceleration[0] * DOT_SENSITIVITY);
+                    mainImageView_dot.setX(new_x);
+                    float current_y = mainImageView_dot.getY();
+                    float new_y = (float)(current_y + linear_acceleration[1] * DOT_SENSITIVITY);
+                    mainImageView_dot.setY(new_y);
                 }
             }
 

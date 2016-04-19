@@ -14,6 +14,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <ImageView
+        android:visibility="gone"
+        android:layout_centerInParent="true"
+        android:background="@mipmap/ic_launcher"
+        android:id="@+id/MAIN_IMAGEVIEW_DOT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <LinearLayout
         android:id="@+id/MAIN_LINLAY_GRAPHS"
         android:orientation="vertical"
